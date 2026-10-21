@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuickAnswer</title>
+<style>
+:root { color-scheme: light; --blue:#2563eb; --ink:#172033; --muted:#64748b; --line:#dbe3ef; --bg:#f4f7fb; }
+* { box-sizing:border-box; }
+body { margin:0; font-family:Arial,Helvetica,sans-serif; background:var(--bg); color:var(--ink); min-height:100vh; }
+header { background:white; border-bottom:1px solid var(--line); padding:18px 22px; }
+.brand { max-width:900px; margin:auto; display:flex; align-items:center; gap:12px; font-weight:800; font-size:21px; }
+.logo { background:var(--blue); color:white; border-radius:12px; width:42px; height:42px; display:grid; place-items:center; font-size:22px; }
+main { max-width:760px; margin:42px auto; padding:0 18px; }
+h1 { font-size:clamp(28px,5vw,40px); margin:0 0 10px; letter-spacing:-1px; }
+.intro { color:var(--muted); line-height:1.55; margin:0 0 25px; }
+.card { background:white; border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:0 8px 30px #1e3a8a0b; }
+label { display:block; font-weight:700; margin:0 0 9px; }
+textarea, select { width:100%; border:1px solid #cbd5e1; border-radius:10px; padding:13px; font:inherit; color:var(--ink); background:white; }
+textarea { min-height:135px; resize:vertical; line-height:1.5; }
+.row { display:flex; gap:12px; align-items:end; margin-top:15px; flex-wrap:wrap; }
+.row .field { flex:1; min-width:180px; }
+button { border:0; border-radius:10px; padding:12px 16px; font-weight:700; font-size:15px; cursor:pointer; }
+.primary { background:var(--blue); color:white; }
+.secondary { background:#eff6ff; color:#1d4ed8; }
+button:disabled { opacity:.55; cursor:wait; }
+.actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+.answer { margin-top:22px; padding:18px; border:1px solid var(--line); border-radius:14px; background:#f8fafc; white-space:pre-wrap; line-height:1.65; min-height:80px; }
+.answer h2 { font-size:17px; margin:0 0 8px; }
+.note { font-size:13px; color:var(--muted); line-height:1.5; margin:16px 2px 0; }
+.status { font-size:13px; color:var(--muted); margin-top:10px; min-height:18px; }
+footer { text-align:center; color:var(--muted); font-size:12px; padding:12px 20px 28px; }
+@media (max-width:520px) { main { margin:26px auto; } .card { padding:16px; } .row button { width:100%; } }
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="logo">Q</div><span>QuickAnswer</span></div></header>
+<main>
+<h1>Get a clear answer.</h1>
+<p class="intro">Paste a question, choose the kind of help you want, and use the answer to understand the topic.</p>
+<section class="card">
+<label for="question">Your question</label>
+<textarea id="question" placeholder="Paste or type your question here…"></textarea>
+<div class="row">
+  <div class="field"><label for="style">Answer style</label>
+  <select id="style"><option value="explain">Explain it simply</option><option value="steps">Show the steps</option><option value="short">Short answer</option><option value="study">Help me study</option></select></div>
+  <button class="primary" id="answerBtn">Get answer ↗</button>
+</div>
+<div class="actions">
+<button class="secondary" id="pasteBtn">Paste question</button>
+<button class="secondary" id="clearBtn">Clear</button>
+<button class="secondary" id="copyBtn">Copy answer</button>
+</div>
+<div class="status" id="status" aria-live="polite"></div>
+<div class="answer" id="answer" aria-live="polite"><h2>Your answer will appear here</h2>QuickAnswer needs an approved AI service to generate answers. Connect one through the setup instructions before using “Get answer.”</div>
+<p class="note"><strong>Privacy tip:</strong> Don’t paste passwords, personal information, or private school records. If this is a school-managed Chromebook, follow your school’s rules for AI tools.</p>
+</section>
+</main>
+<footer>QuickAnswer · A simple study helper</footer>
+<script>
+const q = document.getElementById('question'), answer = document.getElementById('answer'), status = document.getElementById('status');
+document.getElementById('pasteBtn').addEventListener('click', async () => {
+  try { q.value = await navigator.clipboard.readText(); status.textContent = 'Question pasted.'; }
+  catch { q.focus(); status.textContent = 'Clipboard access was blocked. Click the box and press Ctrl+V.'; }
+});
+document.getElementById('clearBtn').addEventListener('click', () => { q.value=''; answer.innerHTML='<h2>Your answer will appear here</h2>Paste a question to get started.'; status.textContent=''; q.focus(); });
+document.getElementById('copyBtn').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(answer.innerText); status.textContent='Answer copied.'; }
+  catch { status.textContent='Select the answer text and press Ctrl+C to copy it.'; }
+});
+document.getElementById('answerBtn').addEventListener('click', () => {
+  if (!q.value.trim()) { status.textContent='Paste or type a question first.'; q.focus(); return; }
+  answer.innerHTML='<h2>AI setup needed</h2>Your question is ready, but this page is currently a front-end only. To generate real answers, it must be connected to an approved AI service. A hosted version or secure service connection is needed; do not put a private API key into a public webpage.';
+  status.textContent='No answer service is connected yet.';
+});
+q.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') document.getElementById('answerBtn').click(); });
+</script>
+</body>
+</html>
